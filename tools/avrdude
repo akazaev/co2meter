@@ -1,0 +1,6 @@
+sudo ./avrdude -C avrdude.conf -c ftdi -p m8 -P /dev/ttyUSB0 -U hfuse:r:-:h -B 1
+sudo ./avrdude -C avrdude.conf -c ftdi -p m8 -P /dev/ttyUSB0 -U lfuse:r:-:h -B 1
+sudo ./avrdude -C avrdude.conf -c ftdi -p m8 -P /dev/ttyUSB0 -U lfuse:w:0xe4:m -U hfuse:w:0xc2:m -B 1
+sudo ./avrdude -C avrdude.conf -c ftdi -p m8 -P /dev/ttyUSB0 -U flash:w:Blink.cpp.hex:a -U lfuse:w:0xe4:m -U hfuse:w:0xc2:m -B 4800
+sudo ./avrdude -C avrdude.conf -c ftdi -p m8 -P /dev/ttyUSB0 -U flash:w:Blink.cpp.hex:a -B 4800
+
