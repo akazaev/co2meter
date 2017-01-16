@@ -6,6 +6,7 @@ import time
 
 import sqlite3
 
+from db import CREATE_CMD, ADD_ROW_CMD
 from mhz19 import MHZ14Reader
 from sygnals import Sygnals
 
@@ -17,8 +18,7 @@ if __name__ == '__main__':
 
     con = sqlite3.connect('/tmp/mhz19.db')
     cur = con.cursor()
-    cur.execute('create table if not exists co2meter '
-                '(time datetime, ppm integer, response varchar(255))')
+    cur.execute(CREATE_CMD)
     con.commit()
 
     timeout = 10
@@ -42,11 +42,12 @@ if __name__ == '__main__':
                     time.sleep(1)
                     led_sygnals.power_off('blue')
                 datetime = time.strftime('%Y-%m-%d %H:%M:%S')
-                print '{0}, {1} ppm, {2} (temp {3})'.format(datetime, status['ppm'],
-                                                 status['zone'], status['temp'])
-                cur.execute('insert into co2meter (time, ppm, response) '
-                            'values("{0}", {1}, "{2}")'.format(datetime,
-                                status['ppm'], str(status['response'])))
+                print '{0}, {1} ppm, {2} (temp {3})'.format(datetime,
+                                                            status['ppm'],
+                                                            status['zone'],
+                                                            status['temp'])
+                cur.execute(ADD_ROW_CMD.format(datetime, status['ppm'],
+                                               str(status['response'])))
                 con.commit()
                 logging.info(status['ppm'])
 
