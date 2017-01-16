@@ -10,8 +10,9 @@ import RPi.GPIO as GPIO
 class SygnalThread(Thread):
     led = None
 
-    def __init__(self, event, blink=None):
+    def __init__(self, event, blink=None, sleep=1):
         self.event = event
+        self.sleep = sleep
         self.blink = blink and 1 or 0
         super(SygnalThread, self).__init__()
 
@@ -23,9 +24,9 @@ class SygnalThread(Thread):
             GPIO.output(self.led, 1)
             self.event.wait()
             GPIO.output(self.led, 0)
-            time.sleep(1)
+            time.sleep(self.sleep)
             GPIO.output(self.led, self.blink)
-            time.sleep(1)
+            time.sleep(self.sleep)
 
 
 class RedSygnal(SygnalThread):
@@ -63,7 +64,8 @@ class Sygnals(object):
 
             # permanently
             event = Event()
-            instance = cls(event, blink=1)
+            sleep = 0.5 if color == 'red' else 1
+            instance = cls(event, blink=1, sleep=sleep)
             self.sygnals[(color, 1)] = (instance, event)
             instance.start()
 

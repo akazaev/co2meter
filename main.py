@@ -49,9 +49,9 @@ if __name__ == '__main__':
                 # sygnals
                 if not start:
                     new_level = None
-                    if status['ppm'] <= 700:
+                    if status['ppm'] <= 800:
                         new_level = 'green'
-                    if status['ppm'] > 700 and status['ppm'] <= 1000:
+                    if status['ppm'] > 800 and status['ppm'] <= 1000:
                         new_level = 'yellow'
                     if status['ppm'] > 1000:
                         new_level = 'red'
