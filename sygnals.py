@@ -7,6 +7,16 @@ from threading import Thread, Event
 import RPi.GPIO as GPIO
 
 
+GPIO.setmode(GPIO.BOARD)
+
+LED_PINS = {
+    'red': 32,
+    'yellow': 36,
+    'green': 38,
+    'blue': 40,
+}
+
+
 class SygnalThread(Thread):
     led = None
 
@@ -17,7 +27,6 @@ class SygnalThread(Thread):
         super(SygnalThread, self).__init__()
 
     def run(self):
-        GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.led, GPIO.OUT)
         GPIO.output(self.led, 1)
         while True:
@@ -30,19 +39,19 @@ class SygnalThread(Thread):
 
 
 class RedSygnal(SygnalThread):
-    led = 32
+    led = LED_PINS['red']
 
 
 class YellowSygnal(SygnalThread):
-    led = 36
+    led = LED_PINS['yellow']
 
 
 class GreenSygnal(SygnalThread):
-    led = 38
+    led = LED_PINS['green']
 
 
 class BlueSygnal(SygnalThread):
-    led = 40
+    led = LED_PINS['blue']
 
 
 class Sygnals(object):
@@ -64,7 +73,7 @@ class Sygnals(object):
 
             # permanently
             event = Event()
-            sleep = 0.5 if color == 'red' else 1
+            sleep = 0.5 if color in ['red', 'blue'] else 1
             instance = cls(event, blink=1, sleep=sleep)
             self.sygnals[(color, 1)] = (instance, event)
             instance.start()
@@ -88,3 +97,13 @@ class Sygnals(object):
         blink = blink and 1 or 0
         sygnal, event = self.sygnals[(color, blink)]
         event.clear()
+
+    def power_off(self, color):
+        if color in LED_PINS:
+            GPIO.setup(LED_PINS[color], GPIO.OUT)
+            GPIO.output(LED_PINS[color], 1)
+
+    def power_on(self, color):
+        if color in LED_PINS:
+            GPIO.setup(LED_PINS[color], GPIO.OUT)
+            GPIO.output(LED_PINS[color], 0)

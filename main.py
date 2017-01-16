@@ -37,6 +37,10 @@ if __name__ == '__main__':
         while True:
             status = conn.get_status()
             if status:
+                if not start:
+                    led_sygnals.power_on('blue')
+                    time.sleep(1)
+                    led_sygnals.power_off('blue')
                 datetime = time.strftime('%Y-%m-%d %H:%M:%S')
                 print '{0}, {1} ppm, {2} (temp {3})'.format(datetime, status['ppm'],
                                                  status['zone'], status['temp'])
@@ -46,12 +50,18 @@ if __name__ == '__main__':
                 con.commit()
                 logging.info(status['ppm'])
 
-                # sygnals
+                if start:
+                    # blue blinks
+                    if 400 <= status['ppm'] <= 2000:
+                        led_sygnals.stop_all()
+                        start = False
+
                 if not start:
+                    # sygnals
                     new_level = None
                     if status['ppm'] <= 800:
                         new_level = 'green'
-                    if status['ppm'] > 800 and status['ppm'] <= 1000:
+                    if 800 < status['ppm'] <= 1000:
                         new_level = 'yellow'
                     if status['ppm'] > 1000:
                         new_level = 'red'
@@ -59,15 +69,11 @@ if __name__ == '__main__':
                         current_level = new_level
                         is_blink = new_level != 'green'
                         led_sygnals.change(new_level,  blink=is_blink)
-
-                # start blink
-                if start and status['ppm'] >= 400 and status['ppm'] <= 2000:
-                    led_sygnals.stop_all()
-                    start = False
             else:
                 print 'No data received'
 
-            time.sleep(timeout)
+            time.sleep(timeout - 1)
+
     except Exception as err:
         logging.error(unicode(err))
     finally:
