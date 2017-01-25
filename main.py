@@ -8,10 +8,13 @@ import sqlite3
 
 from db import CREATE_CMD, ADD_ROW_CMD
 from mhz19 import MHZ14Reader
+from lcddrvier import LCD
 from sygnals import Sygnals
 
 
 if __name__ == '__main__':
+
+    lcd = LCD(port=3)
 
     led_sygnals = Sygnals()
     led_sygnals.change('blue')
@@ -50,6 +53,10 @@ if __name__ == '__main__':
                                                str(status['response'])))
                 con.commit()
                 logging.info(status['ppm'])
+
+                lcd.lcd_clear()
+                lcd.lcd_display_string('{0} ppm'.format(status['ppm']), 1)
+                lcd.lcd_display_string('temp {0}'.format(status['temp']), 2)
 
                 if start:
                     # blue blinks
