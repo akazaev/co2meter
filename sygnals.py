@@ -17,7 +17,20 @@ LED_PINS = {
 }
 
 
-class SygnalThread(Thread):
+class StoppableThread(Thread):
+
+    def __init__(self):
+        super(StoppableThread, self).__init__()
+        self._stop = Event()
+
+    def stop(self):
+        self._stop.set()
+
+    def stopped(self):
+        return self._stop.isSet()
+
+
+class SygnalThread(StoppableThread):
     led = None
 
     def __init__(self, event, blink=None, sleep=1):
@@ -26,16 +39,21 @@ class SygnalThread(Thread):
         self.blink = blink and 1 or 0
         super(SygnalThread, self).__init__()
 
+    def stop(self):
+        super(SygnalThread, self).stop()
+        self.event.set()
+
     def run(self):
         GPIO.setup(self.led, GPIO.OUT)
         GPIO.output(self.led, 1)
-        while True:
+        while not self.stopped():
             GPIO.output(self.led, 1)
             self.event.wait()
             GPIO.output(self.led, 0)
             time.sleep(self.sleep)
             GPIO.output(self.led, self.blink)
             time.sleep(self.sleep)
+        GPIO.output(self.led, 1)
 
 
 class RedSygnal(SygnalThread):
@@ -107,3 +125,11 @@ class Sygnals(object):
         if color in LED_PINS:
             GPIO.setup(LED_PINS[color], GPIO.OUT)
             GPIO.output(LED_PINS[color], 0)
+
+    def exit(self):
+        for _color, sygnal in self.sygnals.items():
+            sygnal, _event = sygnal
+            sygnal.stop()
+        for _color, sygnal in self.sygnals.items():
+            sygnal, _event = sygnal
+            sygnal.join()
