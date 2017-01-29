@@ -1,6 +1,6 @@
 from time import *
 
-from i2c_lib import I2C_device
+import smbus
 
 # commands
 LCD_CLEARDISPLAY = 0x01
@@ -44,15 +44,48 @@ LCD_5x8DOTS = 0x00
 LCD_BACKLIGHT = 0x08
 LCD_NOBACKLIGHT = 0x00
 
-En = 0b00000100 # Enable bit
-Rw = 0b00000010 # Read/Write bit
-Rs = 0b00000001 # Register select bit
+En = 0b00000100  # Enable bit
+Rw = 0b00000010  # Read/Write bit
+Rs = 0b00000001  # Register select bit
 
 
-class LCD(object):
+class I2C_device(object):
+    def __init__(self, addr, port=1):
+        self.addr = addr
+        self.bus = smbus.SMBus(port)
+
+    # Write a single command
+    def write_cmd(self, cmd):
+        self.bus.write_byte(self.addr, cmd)
+        sleep(0.0001)
+
+    # Write a command and argument
+    def write_cmd_arg(self, cmd, data):
+        self.bus.write_byte_data(self.addr, cmd, data)
+        sleep(0.0001)
+
+    # Write a block of data
+    def write_block_data(self, cmd, data):
+        self.bus.write_block_data(self.addr, cmd, data)
+        sleep(0.0001)
+
+    # Read a single byte
+    def read(self):
+        return self.bus.read_byte(self.addr)
+
+    # Read
+    def read_data(self, cmd):
+        return self.bus.read_byte_data(self.addr, cmd)
+
+    # Read a block of data
+    def read_block_data(self, cmd):
+        return self.bus.read_block_data(self.addr, cmd)
+
+
+class LCD(I2C_device):
 
     def __init__(self, ADDRESS=0x3f, port=1):
-        self.lcd_device = I2C_device(ADDRESS, port=port)
+        super(LCD, self).__init__(ADDRESS, port=port)
 
         self.lcd_write(0x03)
         self.lcd_write(0x03)
@@ -67,13 +100,13 @@ class LCD(object):
 
     # clocks EN to latch command
     def lcd_strobe(self, data):
-        self.lcd_device.write_cmd(data | En | LCD_BACKLIGHT)
+        self.write_cmd(data | En | LCD_BACKLIGHT)
         sleep(.0005)
-        self.lcd_device.write_cmd(((data & ~En) | LCD_BACKLIGHT))
+        self.write_cmd(((data & ~En) | LCD_BACKLIGHT))
         sleep(.0001)
 
     def lcd_write_four_bits(self, data):
-        self.lcd_device.write_cmd(data | LCD_BACKLIGHT)
+        self.write_cmd(data | LCD_BACKLIGHT)
         self.lcd_strobe(data)
 
     # write a command to lcd
