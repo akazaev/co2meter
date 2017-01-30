@@ -4,7 +4,7 @@ from sqlite3 import dbapi2 as sqlite3
 
 from flask import g
 
-from web import settings
+import settings
 
 
 def connect_db():
@@ -33,11 +33,12 @@ def get_db():
 def get_data(from_date=None):
     db = get_db()
     cur = db.execute(
-        'select time, ppm from co2meter order by time desc limit 50')
+        'select time, ppm from co2meter order by time desc limit 360')
     entries = cur.fetchall()
-    
+    rows = [list(row) for row in entries]
+    rows.reverse()
     data = {
-        "rows": [list(row) for row in entries]
+        "rows": rows
     }
 
     return data

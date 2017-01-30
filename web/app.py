@@ -4,8 +4,8 @@ from datetime import datetime
 from flask import Flask, jsonify
 from flask import render_template
 
-from web import settings
-from web.db import get_data
+import settings
+from db import get_data
 
 app = Flask(__name__)
 
@@ -28,4 +28,4 @@ def get_tasks(from_date=None):
 
 
 if __name__ == '__main__':
-    app.run(debug=settings.DEBUG, host='0.0.0.0', port=80)
+    app.run(debug=settings.DEBUG, host='0.0.0.0', port=settings.PORT)

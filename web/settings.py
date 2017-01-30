@@ -3,3 +3,4 @@
 DEBUG = True
 DB_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 DB = '/tmp/mhz19.db'
+PORT = 80

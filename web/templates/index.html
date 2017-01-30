@@ -9,23 +9,45 @@
     google.charts.load('current', {'packages':['corechart']});
 
     // Set a callback to run when the Google Visualization API is loaded.
-    google.charts.setOnLoadCallback(drawChart);
+    google.charts.setOnLoadCallback(initChart);
 
-    function drawChart() {
-      var jsonData = $.ajax({
-          url: "co2/",
-          dataType: "json",
-          async: false
+    var default_title = 'current co2 level';
+    var data, chart, options = {'title': default_title};
+
+    function initChart() {
+        data = new google.visualization.DataTable();
+        data.addColumn('string', 'Day');
+        data.addColumn('number', 'ppm');
+        chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+
+        updateChart();
+    }
+
+    function updateChart() {
+      var jsonData;
+
+      try {
+          jsonData = $.ajax({
+              url: "co2/",
+              dataType: "json",
+              async: false
           }).responseText;
+      } catch (err) {
+          console.log(err);
+      }
+       if (jsonData) {
+          data.removeRows(0, data.getNumberOfRows());
+          var rows = JSON.parse(jsonData)['rows'];
+          if (rows.length) {
+              var current_value = rows[rows.length - 1][1];
+              options['title'] = default_title + ' : ' + current_value + ' ppm';
+          }
+          data.addRows(rows);
+          // Instantiate and draw our chart, passing in some options.
+          chart.draw(data, options);
+      };
 
-      // Create our data table out of JSON data loaded from server.
-      var data = new google.visualization.DataTable();
-      data.addColumn('string', 'Day');
-      data.addColumn('number', 'ppm');
-      data.addRows(JSON.parse(jsonData)['rows']);
-      // Instantiate and draw our chart, passing in some options.
-      var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
-      chart.draw(data, {width: 600, height: 350});
+      setTimeout(updateChart, 5000);
     }
 
     </script>
@@ -33,6 +55,6 @@
 
   <body>
     <!--Div that will hold the pie chart-->
-    <div id="chart_div" style="position: absolute; width: 600px; height: 350px; top: 0; right: 0; bottom: 0; left: 0; margin: auto;"></div>
+    <div id="chart_div" style="position: absolute; width: 99%; height: 99%; top: 0; right: 0; bottom: 0; left: 0;"></div>
   </body>
 </html>
