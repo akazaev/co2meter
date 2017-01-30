@@ -28,4 +28,4 @@ def get_tasks(from_date=None):
 
 
 if __name__ == '__main__':
-    app.run(debug=settings.DEBUG)
+    app.run(debug=settings.DEBUG, host='0.0.0.0', port=80)
