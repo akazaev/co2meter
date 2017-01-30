@@ -2,4 +2,4 @@
 
 DEBUG = True
 DB_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
-DB = 'mhz19.db'
+DB = '/tmp/mhz19.db'
