@@ -11,13 +11,29 @@
     // Set a callback to run when the Google Visualization API is loaded.
     google.charts.setOnLoadCallback(initChart);
 
-    var default_title = 'current co2 level';
-    var data, chart, options = {'title': default_title};
+    var data, chart;
+    var options = {
+        vAxes: [{
+          title: 'co2',
+          baseline: 1000,
+          baselineColor: 'red',
+          maxValue: 2000
+        },
+        {
+          title: 'temp',
+          maxValue: 30
+        }],
+        series:{
+          0: {targetAxisIndex: 0, color: 'blue', lineWidth: 3},
+          1: {targetAxisIndex: 1, color: 'orange', lineWidth: 3}
+        }
+    };
 
     function initChart() {
         data = new google.visualization.DataTable();
         data.addColumn('string', 'Day');
         data.addColumn('number', 'ppm');
+        data.addColumn('number', 'temp');
         chart = new google.visualization.LineChart(document.getElementById('chart_div'));
 
         updateChart();
@@ -39,13 +55,14 @@
           data.removeRows(0, data.getNumberOfRows());
           var rows = JSON.parse(jsonData)['rows'];
           if (rows.length) {
-              var current_value = rows[rows.length - 1][1];
-              options['title'] = default_title + ' : ' + current_value + ' ppm';
+              var current_co2_value = rows[rows.length - 1][1];
+              var current_temp_value = rows[rows.length - 1][2];
+              options['title'] = 'current co2 level : ' + current_co2_value + ' ppm, temp : ' + current_temp_value;
           }
           data.addRows(rows);
           // Instantiate and draw our chart, passing in some options.
           chart.draw(data, options);
-      };
+      }
 
       setTimeout(updateChart, 5000);
     }

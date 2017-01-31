@@ -33,7 +33,7 @@ def get_db():
 def get_data(from_date=None):
     db = get_db()
     cur = db.execute(
-        'select time, ppm from co2meter order by time desc limit 360')
+        'select time, ppm, temp from co2meter order by time desc limit 360')
     entries = cur.fetchall()
     rows = [list(row) for row in entries]
     rows.reverse()

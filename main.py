@@ -63,7 +63,8 @@ if __name__ == '__main__':
                 print '{0}, {1} ppm, {2} (temp {3})'.format(datetime, ppm,
                                                             zone, temp)
                 if not start:
-                    cur.execute(ADD_ROW_CMD.format(datetime, ppm, str(response)))
+                    cur.execute(ADD_ROW_CMD.format(datetime, ppm, temp,
+                                                   str(response)))
                     con.commit()
                     logging.info(ppm)
 
