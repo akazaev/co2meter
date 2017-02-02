@@ -14,7 +14,8 @@ from sygnals import Sygnals
 
 
 def clean():
-    lcd.lcd_clear()
+    if lcd:
+        lcd.lcd_clear()
     led_sygnals.stop_all()
     conn.disconnect()
     con.close()
@@ -23,7 +24,10 @@ def clean():
 
 if __name__ == '__main__':
 
-    lcd = LCD(port=3)
+    try:
+        lcd = LCD(port=3)
+    except:
+        lcd = None
 
     led_sygnals = Sygnals()
     led_sygnals.change('blue')
@@ -75,12 +79,13 @@ if __name__ == '__main__':
                         start = False
                     else:
                         start_count += 1
-                        lcd.lcd_clear()
-                        lcd.lcd_display_string('debug {0},{1}'.format(ppm,
-                                                                      temp), 2)
-                        time.sleep(0.2)
-                        lcd.lcd_clear()
-                        lcd.lcd_display_string('initialize...', 1)
+                        if lcd:
+                            lcd.lcd_clear()
+                            lcd.lcd_display_string('debug {0},{1}'.format(
+                                ppm, temp), 2)
+                            time.sleep(0.2)
+                            lcd.lcd_clear()
+                            lcd.lcd_display_string('initialize...', 1)
 
                         # if no real data from sensor on start try to reconnect
                         if start_count >= 3:
@@ -103,9 +108,10 @@ if __name__ == '__main__':
                         is_blink = new_level != 'green'
                         led_sygnals.change(new_level,  blink=is_blink)
 
-                    lcd.lcd_clear()
-                    lcd.lcd_display_string('{0} ppm'.format(ppm), 1)
-                    lcd.lcd_display_string('temp {0}'.format(temp), 2)
+                    if lcd:
+                        lcd.lcd_clear()
+                        lcd.lcd_display_string('{0} ppm'.format(ppm), 1)
+                        lcd.lcd_display_string('temp {0}'.format(temp), 2)
             else:
                 print 'No data received'
 
