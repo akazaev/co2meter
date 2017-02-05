@@ -5,6 +5,18 @@
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script type="text/javascript">
 
+    function getParameterByName(name, url) {
+        if (!url) {
+          url = window.location.href;
+        }
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+            results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
+
     // Load the Visualization API and the piechart package.
     google.charts.load('current', {'packages':['corechart']});
 
@@ -39,12 +51,24 @@
         updateChart();
     }
 
+    var data_url = "co2/", timeout = 5000;
+    var limit = getParameterByName('limit')
+    if (getParameterByName('pwm')) {
+        data_url = "co2?pwm=1";
+        if (limit)
+          data_url = data_url + '&limit=' + limit;
+        timeout = 1000
+    } else
+    {
+        if (limit)
+          data_url = data_url + '?limit=' + limit;
+    }
+
     function updateChart() {
       var jsonData;
-
       try {
           jsonData = $.ajax({
-              url: "co2/",
+              url: data_url,
               dataType: "json",
               async: false
           }).responseText;
@@ -64,14 +88,19 @@
           chart.draw(data, options);
       }
 
-      setTimeout(updateChart, 5000);
+      setTimeout(updateChart, timeout);
     }
 
     </script>
   </head>
 
   <body>
-    <!--Div that will hold the pie chart-->
-    <div id="chart_div" style="position: absolute; width: 99%; height: 99%; top: 0; right: 0; bottom: 0; left: 0;"></div>
+    <div>
+      <a href="/">UART data</a>&nbsp;
+      <a href="/?limit=60">UART data (10 min)</a>&nbsp;
+      <a href="/?pwm=1">PWM data</a>&nbsp;
+      <a href="/?pwm=1&limit=600">PWM data (10 min)</a>&nbsp;
+    </div>
+    <div id="chart_div" style="width: 99%; height: 95%;"></div>
   </body>
 </html>

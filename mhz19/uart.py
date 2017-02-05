@@ -41,10 +41,6 @@ class MHZ14_UART(object):
             self.link.write(chr(byte))
 
     def get_status(self):
-        """
-        Read data from sensor
-        :return {ppa, t}|None:
-        """
         self._send_data_request()
         response = self.link.read(9)
         if len(response) == 9:

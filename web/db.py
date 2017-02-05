@@ -30,10 +30,27 @@ def get_db():
 #         g.sqlite_db.close()
 
 
-def get_data(from_date=None):
+def get_uart_data(from_date=None, limit=None):
     db = get_db()
+    limit = limit or 360
     cur = db.execute(
-        'select time, ppm, temp from co2meter order by time desc limit 360')
+        'select time, ppm, temp from co2meter order by time desc limit {0}'
+        ''.format(limit))
+    entries = cur.fetchall()
+    rows = [list(row) for row in entries]
+    rows.reverse()
+    data = {
+        "rows": rows
+    }
+
+    return data
+
+
+def get_pwm_data(from_date=None, limit=None):
+    db = get_db()
+    limit = limit or 3600
+    cur = db.execute('select time, ppm, 0 from co2meter_pwm '
+                     'order by time desc limit {0}'.format(limit))
     entries = cur.fetchall()
     rows = [list(row) for row in entries]
     rows.reverse()

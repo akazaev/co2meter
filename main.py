@@ -16,9 +16,9 @@ def clean():
         lcd.lcd_clear()
     led_sygnals.stop_all()
     conn.disconnect()
+    conn_pwm.exit()
     db.exit()
     led_sygnals.exit()
-    conn_pwm.exit()
 
 
 if __name__ == '__main__':
@@ -26,7 +26,7 @@ if __name__ == '__main__':
     try:
         lcd = LCD(port=3)
     except Exception as err:
-        logging.error(err)
+        logging.error('Display is not available.')
         lcd = None
 
     db = DBManager()
@@ -47,6 +47,9 @@ if __name__ == '__main__':
     led_sygnals.change('blue', blink=True)
 
     current_level = None
+
+    # wait pwm first data
+    time.sleep(2)
 
     try:
         while True:
@@ -117,4 +120,4 @@ if __name__ == '__main__':
         sys.exit()
     except Exception as err:
         clean()
-        logging.error(unicode(err))
+        raise

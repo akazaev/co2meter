@@ -6,6 +6,8 @@ from threading import Thread, Event
 
 import RPi.GPIO as GPIO
 
+from helpers import StoppableThread
+
 
 GPIO.setmode(GPIO.BOARD)
 
@@ -15,19 +17,6 @@ LED_PINS = {
     'green': 38,
     'blue': 40,
 }
-
-
-class StoppableThread(Thread):
-
-    def __init__(self):
-        super(StoppableThread, self).__init__()
-        self._stop = Event()
-
-    def stop(self):
-        self._stop.set()
-
-    def stopped(self):
-        return self._stop.isSet()
 
 
 class SygnalThread(StoppableThread):
@@ -44,6 +33,7 @@ class SygnalThread(StoppableThread):
         self.event.set()
 
     def run(self):
+        GPIO.setwarnings(False)
         GPIO.setup(self.led, GPIO.OUT)
         GPIO.output(self.led, 1)
         while not self.stopped():
