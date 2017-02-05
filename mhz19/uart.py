@@ -6,21 +6,14 @@ import serial
 logger = logging.getLogger(__name__)
 
 
-class MHZ14Reader:
+class MHZ14_UART(object):
 
     _requestSequence = [0xff, 0x01, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x79]
 
-    def __init__(self, port, open_connection=True):
-        """
-        :param string port: path to tty
-        :param bool open_connection: should port be opened immediately
-        """
+    def __init__(self, port):
         self.port = port
-        """TTY name"""
         self.link = None
-        """Connection with sensor"""
-        if open_connection:
-            self.connect()
+        self.connect()
 
     def connect(self):
         """
@@ -47,20 +40,6 @@ class MHZ14Reader:
         for byte in self._requestSequence:
             self.link.write(chr(byte))
 
-    def get_co2_level(self, ppm):
-        level = 'Unknown'
-        if ppm <= 450:
-            level = 'Normal outdoor level'
-        elif ppm <= 600:
-            level = 'Acceptable level'
-        elif ppm <= 1000:
-            level = 'Complaints of stiffness and odors'
-        elif ppm <= 2500:
-            level = 'General drowsiness'
-        elif ppm <= 5000:
-            level = 'Adverse health effects may be expected'
-        return level
-
     def get_status(self):
         """
         Read data from sensor
@@ -74,6 +53,4 @@ class MHZ14Reader:
                 'ppm': ppm,
                 'temp': ord(response[4]) - 40,
                 'response': [ord(value) for value in response],
-                'zone': self.get_co2_level(ppm)
             }
-

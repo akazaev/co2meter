@@ -5,10 +5,8 @@ import logging
 import sys
 import time
 
-import sqlite3
-
-from db import CREATE_CMD, ADD_ROW_CMD
-from mhz19 import MHZ14Reader
+from db import DBManager
+from mhz19 import MHZ14_UART, MHZ14_PWM
 from lcddrvier import LCD
 from sygnals import Sygnals
 
@@ -18,29 +16,29 @@ def clean():
         lcd.lcd_clear()
     led_sygnals.stop_all()
     conn.disconnect()
-    con.close()
+    db.exit()
     led_sygnals.exit()
+    conn_pwm.exit()
 
 
 if __name__ == '__main__':
 
     try:
         lcd = LCD(port=3)
-    except:
+    except Exception as err:
+        logging.error(err)
         lcd = None
+
+    db = DBManager()
 
     led_sygnals = Sygnals()
     led_sygnals.change('blue')
 
-    con = sqlite3.connect('/tmp/mhz19.db')
-    cur = con.cursor()
-    cur.execute(CREATE_CMD)
-    con.commit()
-
     timeout = 10
     port = '/dev/ttyS0'
 
-    conn = MHZ14Reader(port)
+    conn = MHZ14_UART(port)
+    conn_pwm = MHZ14_PWM(db)
     print 'Connected to {0}'.format(conn.link.name)
     logging.info(conn.link.name)
 
@@ -53,9 +51,11 @@ if __name__ == '__main__':
     try:
         while True:
             status = conn.get_status()
+            status_pwm = conn_pwm.get_status()
             if status:
                 ppm = status['ppm']
-                zone = status['zone']
+                ppm_pwm = status_pwm['ppm']
+                status['ppm_pwm'] = ppm_pwm
                 temp = status['temp']
                 response = status['response']
 
@@ -63,13 +63,9 @@ if __name__ == '__main__':
                     led_sygnals.power_on('blue')
                     time.sleep(1)
                     led_sygnals.power_off('blue')
-                datetime = time.strftime('%Y-%m-%d %H:%M:%S')
-                print '{0}, {1} ppm, {2} (temp {3})'.format(datetime, ppm,
-                                                            zone, temp)
+                print '{0} ppm ({1}), temp {2}'.format(ppm, ppm_pwm, temp)
                 if not start:
-                    cur.execute(ADD_ROW_CMD.format(datetime, ppm, temp,
-                                                   str(response)))
-                    con.commit()
+                    db.save_uart_data(status)
                     logging.info(ppm)
 
                 if start:
@@ -91,8 +87,8 @@ if __name__ == '__main__':
                         if start_count >= 3:
                             start_count = 0
                             conn.disconnect()
-                            conn = MHZ14Reader(port)
-                            print '{0}, reconnect'.format(datetime)
+                            conn = MHZ14_UART(port)
+                            print 'reconnect'
 
                 if not start:
                     # sygnals
