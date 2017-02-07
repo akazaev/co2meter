@@ -1,9 +1,8 @@
 # coding: utf-8
 
 import logging
+import time
 import serial
-
-logger = logging.getLogger(__name__)
 
 
 class MHZ14_UART(object):
@@ -25,6 +24,12 @@ class MHZ14_UART(object):
                                   parity=serial.PARITY_NONE,
                                   stopbits=serial.STOPBITS_ONE, dsrdtr=True,
                                   timeout=5, interCharTimeout=0.1)
+
+        trash_byte = self.link.read(1)
+        while trash_byte:
+            logging.warning('read trash byte {0} from UART...'
+                            ''.format(hex(ord(trash_byte))))
+            trash_byte = self.link.read(1)
 
     def disconnect(self):
         """

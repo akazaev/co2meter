@@ -68,12 +68,13 @@ if __name__ == '__main__':
                     led_sygnals.power_off('blue')
                 print '{0} ppm ({1}), temp {2}'.format(ppm, ppm_pwm, temp)
                 if not start:
-                    db.save_uart_data(status)
+                    if 0 <= ppm <= 5000:
+                        db.save_uart_data(status)
                     logging.info(ppm)
 
                 if start:
                     # blue blinks
-                    if 400 <= ppm <= 2000:
+                    if 400 <= ppm <= 5000:
                         led_sygnals.stop_all()
                         start = False
                     else:
@@ -96,11 +97,11 @@ if __name__ == '__main__':
                 if not start:
                     # sygnals
                     new_level = None
-                    if ppm <= 800:
+                    if ppm < 800:
                         new_level = 'green'
-                    if 800 < ppm <= 1000:
+                    if 800 <= ppm <= 1200:
                         new_level = 'yellow'
-                    if ppm > 1000:
+                    if ppm > 1200:
                         new_level = 'red'
                     if new_level != current_level:
                         current_level = new_level

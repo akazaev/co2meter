@@ -42,8 +42,9 @@ class pwm_process(Process):
                     time.sleep(0.0001)
                 duration = time.time() - start
                 ppm = int(round(5 * (duration*1000 - 2)))
-                status = time.strftime('%Y-%m-%d %H:%M:%S'), ppm
-                self.queue.put(status)
+                if 0 <= ppm <= 5000:
+                    status = time.strftime('%Y-%m-%d %H:%M:%S'), ppm
+                    self.queue.put(status)
         except:
             pass
 
