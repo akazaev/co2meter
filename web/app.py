@@ -1,11 +1,11 @@
 # coding: utf-8
 from datetime import datetime
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, redirect
 from flask import render_template
 
 import settings
-from db import get_uart_data, get_pwm_data
+from db import get_uart_data, get_pwm_data, reset_data
 
 app = Flask(__name__)
 
@@ -31,6 +31,12 @@ def get_data(from_date=None):
     else:
         data = get_uart_data(parsed_date, limit)
     return jsonify(data)
+
+
+@app.route('/reset/', methods=['GET'])
+def reset():
+    reset_data()
+    return redirect('/')
 
 
 if __name__ == '__main__':

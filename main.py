@@ -11,6 +11,9 @@ from lcddrvier import LCD
 from sygnals import Sygnals
 
 
+logging.getLogger().setLevel(logging.INFO)
+
+
 def clean():
     if lcd:
         lcd.lcd_clear()
@@ -26,7 +29,7 @@ if __name__ == '__main__':
     try:
         lcd = LCD(port=3)
     except Exception as err:
-        logging.error('Display is not available.')
+        logging.warning('Display is not available.')
         lcd = None
 
     db = DBManager()
@@ -42,14 +45,12 @@ if __name__ == '__main__':
     print 'Connected to {0}'.format(conn.link.name)
     logging.info(conn.link.name)
 
-    start = True
-    start_count = 0
-    led_sygnals.change('blue', blink=True)
-
-    current_level = None
-
+    led_sygnals.power_on('blue')
     # wait pwm first data
     time.sleep(2)
+    led_sygnals.power_off('blue')
+
+    current_level = None
 
     try:
         while True:
@@ -62,56 +63,33 @@ if __name__ == '__main__':
                 temp = status['temp']
                 response = status['response']
 
-                if not start:
-                    led_sygnals.power_on('blue')
-                    time.sleep(1)
-                    led_sygnals.power_off('blue')
-                print '{0} ppm ({1}), temp {2}'.format(ppm, ppm_pwm, temp)
-                if not start:
-                    if 0 <= ppm <= 5000:
-                        db.save_uart_data(status)
-                    logging.info(ppm)
+                led_sygnals.power_on('blue')
+                time.sleep(1)
+                led_sygnals.power_off('blue')
 
-                if start:
-                    # blue blinks
-                    if 400 <= ppm <= 5000:
-                        led_sygnals.stop_all()
-                        start = False
-                    else:
-                        start_count += 1
-                        if lcd:
-                            lcd.lcd_clear()
-                            lcd.lcd_display_string('debug {0},{1}'.format(
-                                ppm, temp), 2)
-                            time.sleep(0.2)
-                            lcd.lcd_clear()
-                            lcd.lcd_display_string('initialize...', 1)
+                if 0 <= ppm <= 5000:
+                    db.save_uart_data(status)
 
-                        # if no real data from sensor on start try to reconnect
-                        if start_count >= 3:
-                            start_count = 0
-                            conn.disconnect()
-                            conn = MHZ14_UART(port)
-                            print 'reconnect'
+                logging.info('UART: {0} ppm, PWM: {1} ppm, temp {2}'
+                             ''.format(ppm, ppm_pwm, temp))
 
-                if not start:
-                    # sygnals
-                    new_level = None
-                    if ppm < 800:
-                        new_level = 'green'
-                    if 800 <= ppm <= 1200:
-                        new_level = 'yellow'
-                    if ppm > 1200:
-                        new_level = 'red'
-                    if new_level != current_level:
-                        current_level = new_level
-                        is_blink = new_level != 'green'
-                        led_sygnals.change(new_level,  blink=is_blink)
+                # sygnals
+                new_level = None
+                if ppm < 800:
+                    new_level = 'green'
+                if 800 <= ppm <= 1200:
+                    new_level = 'yellow'
+                if ppm > 1200:
+                    new_level = 'red'
+                if new_level != current_level:
+                    current_level = new_level
+                    is_blink = new_level != 'green'
+                    led_sygnals.change(new_level,  blink=is_blink)
 
-                    if lcd:
-                        lcd.lcd_clear()
-                        lcd.lcd_display_string('{0} ppm'.format(ppm), 1)
-                        lcd.lcd_display_string('temp {0}'.format(temp), 2)
+                if lcd:
+                    lcd.lcd_clear()
+                    lcd.lcd_display_string('{0} ppm'.format(ppm), 1)
+                    lcd.lcd_display_string('temp {0}'.format(temp), 2)
             else:
                 print 'No data received'
 

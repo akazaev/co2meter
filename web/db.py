@@ -59,3 +59,10 @@ def get_pwm_data(from_date=None, limit=None):
     }
 
     return data
+
+
+def reset_data():
+    db = get_db()
+    db.execute('delete from co2meter')
+    db.execute('delete from co2meter_pwm')
+    db.commit()

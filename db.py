@@ -8,6 +8,7 @@ import sqlite3
 
 from helpers import StoppableThread
 
+DB = '/var/lib/co2meter/mhz19.db'
 
 CREATE_CMD = ('create table if not exists co2meter (time datetime, ppm '
               'integer, ppma integer, temp integer, response varchar(255))')
@@ -23,7 +24,7 @@ ADD_ROW_PWM_CMD = 'insert into co2meter_pwm (time, ppm) values("{0}", {1})'
 
 class DBThread(StoppableThread):
 
-    def __init__(self, db_path='/tmp/mhz19.db', queue=None):
+    def __init__(self, db_path=DB, queue=None):
         self.db_path = db_path
         self.queue = queue
         super(DBThread, self).__init__()
@@ -49,7 +50,7 @@ class DBThread(StoppableThread):
 
 class DBManager(object):
 
-    def __init__(self, db_path='/tmp/mhz19.db'):
+    def __init__(self, db_path=DB):
         self.queue = Queue()
         self.thread = DBThread(db_path, self.queue)
         self.thread.start()
