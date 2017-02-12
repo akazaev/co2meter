@@ -17,7 +17,6 @@ logging.getLogger().setLevel(logging.INFO)
 def clean():
     if lcd:
         lcd.lcd_clear()
-    led_sygnals.stop_all()
     conn.disconnect()
     conn_pwm.exit()
     db.exit()
@@ -35,7 +34,6 @@ if __name__ == '__main__':
     db = DBManager()
 
     led_sygnals = Sygnals()
-    led_sygnals.change('blue')
 
     timeout = 10
     port = '/dev/ttyS0'
@@ -45,10 +43,8 @@ if __name__ == '__main__':
     print 'Connected to {0}'.format(conn.link.name)
     logging.info(conn.link.name)
 
-    led_sygnals.power_on('blue')
     # wait pwm first data
     time.sleep(2)
-    led_sygnals.power_off('blue')
 
     current_level = None
 
@@ -62,10 +58,6 @@ if __name__ == '__main__':
                 status['ppm_pwm'] = ppm_pwm
                 temp = status['temp']
                 response = status['response']
-
-                led_sygnals.power_on('blue')
-                time.sleep(1)
-                led_sygnals.power_off('blue')
 
                 if 0 <= ppm <= 5000:
                     db.save_uart_data(status)
@@ -84,7 +76,7 @@ if __name__ == '__main__':
                 if new_level != current_level:
                     current_level = new_level
                     is_blink = new_level != 'green'
-                    led_sygnals.change(new_level,  blink=is_blink)
+                    led_sygnals.change(new_level)
 
                 if lcd:
                     lcd.lcd_clear()
