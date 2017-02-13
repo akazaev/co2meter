@@ -52,24 +52,30 @@
         updateChart();
     }
 
-    var data_url = "co2/", timeout = 5000;
-    var limit = getParameterByName('limit')
-    if (getParameterByName('pwm')) {
-        data_url = "co2?pwm=1";
-        if (limit)
-          data_url = data_url + '&limit=' + limit;
-        timeout = 1000
-    } else
+    var timeout = 5000;
+    var limit = getParameterByName('limit');
+
+    function get_url()
     {
+        var data_url = "co2/";
+        if (document.getElementsByName('smoothed')[0].checked)
+            data_url = data_url + '?smooth=1';
+        else
+            data_url = data_url + '?smooth=0';
+        if (getParameterByName('pwm')) {
+            data_url = data_url + '&pwm=1';
+            timeout = 1000
+        }
         if (limit)
-          data_url = data_url + '?limit=' + limit;
+            data_url = data_url + '&limit=' + limit;
+        return data_url
     }
 
     function updateChart() {
       var jsonData;
       try {
           jsonData = $.ajax({
-              url: data_url,
+              url: get_url(),
               dataType: "json",
               async: false
           }).responseText;
@@ -98,10 +104,15 @@
   <body>
     <div>
       <a href="/">UART data (1 hour)</a>&nbsp;
+      <a href="/?limit=1440">UART data (4 hour)</a>&nbsp;
       <a href="/?limit=60">UART data (10 min)</a>&nbsp;
+      <a href="/?limit=6">UART data (1 min)</a>&nbsp;
       <a href="/?pwm=1">PWM data (1 hour)</a>&nbsp;
+      <a href="/?pwm=1&limit=14400">PWM data (4 hour)</a>&nbsp;
       <a href="/?pwm=1&limit=600">PWM data (10 min)</a>&nbsp;
-      <a href="/reset">Reset data</a>&nbsp;
+      <a href="/?pwm=1&limit=60">PWM data (1 min)</a>&nbsp;
+      <a href="/reset">Reset data</a><br/>
+      Smooth data <input type="checkbox" checked name="smoothed"/>
     </div>
     <div id="chart_div" style="width: 99%; height: 95%;"></div>
   </body>

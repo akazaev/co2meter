@@ -30,7 +30,7 @@ def get_db():
 #         g.sqlite_db.close()
 
 
-def get_uart_data(from_date=None, limit=None):
+def get_uart_data(from_date=None, limit=None,  smooth=False):
     db = get_db()
     limit = limit or 360
     cur = db.execute(
@@ -42,11 +42,14 @@ def get_uart_data(from_date=None, limit=None):
     data = {
         "rows": rows
     }
+    if smooth:
+        smoothed(data, 1)
+        smoothed(data, 2)
 
     return data
 
 
-def get_pwm_data(from_date=None, limit=None):
+def get_pwm_data(from_date=None, limit=None, smooth=False):
     db = get_db()
     limit = limit or 3600
     cur = db.execute('select time, ppm, 0 from co2meter_pwm '
@@ -57,8 +60,26 @@ def get_pwm_data(from_date=None, limit=None):
     data = {
         "rows": rows
     }
+    if smooth:
+        smoothed(data, 1)
+        smoothed(data, 2)
 
     return data
+
+
+def smoothed(data, column, interval=10):
+    rows = data['rows']
+    smoothed = []
+    sum = count = 0
+    for i in xrange(len(rows)):
+        sum += float(rows[i][column])
+        count += 1
+        if i >= interval - 1:
+            sum -= rows[i - interval + 1][column]
+            count -= 1
+        smoothed.append(sum/count)
+    for i in xrange(len(rows)):
+        rows[i][column] = int(round(smoothed[i]))
 
 
 def reset_data():
