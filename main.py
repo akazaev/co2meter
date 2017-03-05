@@ -8,6 +8,7 @@ import time
 from db import DBManager
 from mhz19 import MHZ14_UART, MHZ14_PWM
 from lcddrvier import LCD
+from sevensegment import Sevensegment
 from sygnals import Sygnals
 
 
@@ -28,7 +29,7 @@ if __name__ == '__main__':
     try:
         lcd = LCD(port=3)
     except Exception as err:
-        logging.warning('Display is not available.')
+        logging.warning('I2C display is not available.')
         lcd = None
 
     db = DBManager()
@@ -42,6 +43,12 @@ if __name__ == '__main__':
     conn_pwm = MHZ14_PWM(db)
     print 'Connected to {0}'.format(conn.link.name)
     logging.info(conn.link.name)
+
+    try:
+        lcd7 = Sevensegment()
+    except Exception as err:
+        logging.warning('7 segment display is not available. {0}'.format(err))
+        lcd7 = None
 
     # wait pwm first data
     time.sleep(2)
@@ -82,6 +89,8 @@ if __name__ == '__main__':
                     lcd.lcd_clear()
                     lcd.lcd_display_string('{0} ppm'.format(ppm), 1)
                     lcd.lcd_display_string('temp {0}'.format(temp), 2)
+                if lcd7:
+                    lcd7.set_output(ppm, temp)
             else:
                 print 'No data received'
 

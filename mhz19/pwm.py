@@ -8,11 +8,11 @@ import RPi.GPIO as GPIO
 
 class pwm_process(Process):
 
-    def __init__(self, queue=None, pwm_port=18):
+    def __init__(self, queue=None, pwm_port=24):
         self.pwm_port = pwm_port
         self.queue = queue
         GPIO.setwarnings(False)
-        GPIO.setmode(GPIO.BOARD)
+        GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.pwm_port, GPIO.IN)
         self.exit_event = Event()
         super(pwm_process, self).__init__()

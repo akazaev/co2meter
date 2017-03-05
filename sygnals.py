@@ -2,13 +2,13 @@
 
 import RPi.GPIO as GPIO
 
-GPIO.setmode(GPIO.BOARD)
+GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
 LED_PINS = {
-    'red': (32, 2, 30),
-    'yellow': (36, 1, 50),
-    'green': (38, 1, 0),
+    'red': (12, 2, 30),
+    'yellow': (16, 1, 50),
+    'green': (20, 1, 0),
 }
 
 
